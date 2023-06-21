@@ -14,6 +14,7 @@ def main():
     data = read_sheet()
     # print(data)
 
+    name_cnt = {}
     woodlawn = []
     crown = []
     fifty_third = []
@@ -22,7 +23,13 @@ def main():
     total_cap = 0
 
     for person in data:
-        name = person['name'][:person['name'].index(" ") + 2]
+        # name = person['name'][:person['name'].index(" ") + 2]
+        name = person['name'].strip()
+        fname = name.split()[0]
+        if fname in name_cnt:
+            name_cnt[fname] += 1
+        else: 
+            name_cnt[fname] = 1
         match person[weekday].lower():
             case "x":
                 match person['pickup_location']:
@@ -114,7 +121,14 @@ def main():
     print(at_cap_drivers)
 
     for driver in at_cap_drivers + drivers:
+        driver["name"] = driver["name"].split()[0]
         driver["passengers"].sort()
+        for i, passenger in enumerate(driver["passengers"]):
+            fname = passenger.split()[0]
+            if name_cnt[fname] == 1:
+                driver["passengers"][i] = fname
+            else:
+                driver["passengers"][i] = passenger[:passenger.index(" ") + 2]
         print(driver["name"], "to", driver["pickup_location"] + ":", ", ".join(driver["passengers"]), sep = " ")
 
 
