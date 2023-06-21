@@ -104,10 +104,12 @@ def main():
                     driver["passengers"].append(fifty_third.pop())
             case _: # rideshare case
                 if len(woodlawn) > len(crown): 
+                    driver["pickup_location"] = "Woodlawn"
                     for _ in range(driver["capacity"]):
                         if len(woodlawn) == 0: break
                         driver["passengers"].append(woodlawn.pop())
                 else:
+                    driver["pickup_location"] = "Crown"
                     for _ in range(driver["capacity"]):
                         if len(crown) == 0: break
                         driver["passengers"].append(crown.pop())
@@ -121,6 +123,7 @@ def main():
     # print(at_cap_drivers)
 
     for driver in drivers:
+        if "uber" in driver["name"]: continue
         open_seats = driver["capacity"] - len(driver["passengers"]) - 1
         if open_seats == 0: continue
         if len(woodlawn) > 0:
@@ -165,24 +168,25 @@ def main():
                 driver["passengers"][i] = fname
             else:
                 driver["passengers"][i] = passenger[:passenger.index(" ") + 2]
-        for i, passenger in enumerate(driver["passengers1"]):
-            fname = passenger.split()[0]
-            try:
-                if name_cnt[fname] == 1:
-                    driver["passengers1"][i] = fname
-                else:
-                    driver["passengers1"][i] = passenger[:passenger.index(" ") + 2]
-            except: continue
-        for i, passenger in enumerate(driver["passengers2"]):
-            fname = passenger.split()[0]
-            try:
-                if name_cnt[fname] == 1:
-                    driver["passengers2"][i] = fname
-                else:
-                    driver["passengers2"][i] = passenger[:passenger.index(" ") + 2]
-            except: continue
+        if "uber" not in driver["name"]:
+            for i, passenger in enumerate(driver["passengers1"]):
+                fname = passenger.split()[0]
+                try:
+                    if name_cnt[fname] == 1:
+                        driver["passengers1"][i] = fname
+                    else:
+                        driver["passengers1"][i] = passenger[:passenger.index(" ") + 2]
+                except: continue
+            for i, passenger in enumerate(driver["passengers2"]):
+                fname = passenger.split()[0]
+                try:
+                    if name_cnt[fname] == 1:
+                        driver["passengers2"][i] = fname
+                    else:
+                        driver["passengers2"][i] = passenger[:passenger.index(" ") + 2]
+                except: continue
         print(driver["name"], "to", driver["pickup_location"] + ":", ", ".join(driver["passengers"]))
-        if len(driver["passengers1"]) > 0:
+        if "uber" not in driver["name"] and len(driver["passengers1"]) > 0:
             print(driver["name"], "to", driver["passengers1"].pop(0) + ": ", end = "")
             driver["passengers1"].sort()
             print(", ".join(driver["passengers1"]))
