@@ -12,18 +12,15 @@ def main():
     tmr = datetime.datetime.today() + datetime.timedelta(days=1)
     weekday = tmr.strftime('%a')
     data = read_sheet()
-    # print(data)
 
     name_cnt = {}
     woodlawn = []
     crown = []
     fifty_third = []
     drivers = [] # list of all drivers, their preferred pickup location, and number of passengers
-    # at_cap_drivers = []
     total_cap = 0
 
     for person in data:
-        # name = person['name'][:person['name'].index(" ") + 2]
         name = person['name'].strip()
         fname = name.split()[0]
         if fname in name_cnt:
@@ -53,39 +50,33 @@ def main():
     random.shuffle(woodlawn)
     random.shuffle(crown)
     random.shuffle(fifty_third)
-    # print(woodlawn)
-    # print(crown)
-    # print(fifty_third)
-    # print(drivers)
 
     woodlawners = len(woodlawn)
     crowners = len(crown)
     fifty_thirders = len(fifty_third)
     driverers = len(drivers)
-    print("lengths", woodlawners, crowners, fifty_thirders, driverers)
 
     diff = 0
     if woodlawners + crowners + fifty_thirders + driverers > total_cap:
         diff = woodlawners + crowners + fifty_thirders + driverers - total_cap
-        print("==========diff is", diff)
         if diff < 4 or diff % 4 == 0:
             while diff > 0:
-                drivers.insert(0, {"name": "uber", "pickup_location": "", "capacity": 4, "passengers": []})
+                drivers.insert(0, {"name": "Uber", "pickup_location": "", "capacity": 4, "passengers": []})
                 diff -= min(diff, 4)
         elif diff < 6 or diff % 6 == 0:
             while diff > 0:
-                drivers.insert(0, {"name": "uberXL", "pickup_location": "", "capacity": 6, "passengers": []})
+                drivers.insert(0, {"name": "UberXL", "pickup_location": "", "capacity": 6, "passengers": []})
                 diff -= min(diff, 6)
         elif diff <= 10:
-            drivers.insert(0, {"name": "uberXL", "pickup_location": "", "capacity": 6, "passengers": []})
+            drivers.insert(0, {"name": "UberXL", "pickup_location": "", "capacity": 6, "passengers": []})
             diff -= 6
-            drivers.insert(0, {"name": "uber", "pickup_location": "", "capacity": 4, "passengers": []})
+            drivers.insert(0, {"name": "Uber", "pickup_location": "", "capacity": 4, "passengers": []})
             diff -= min(diff, 4)
         else:
             while diff > 4:
-                drivers.insert(0, {"name": "uberXL", "pickup_location": "", "capacity": 6, "passengers": []})
+                drivers.insert(0, {"name": "UberXL", "pickup_location": "", "capacity": 6, "passengers": []})
                 diff -= 6
-            drivers.insert(0, {"name": "uber", "pickup_location": "", "capacity": 4, "passengers": []})
+            drivers.insert(0, {"name": "Uber", "pickup_location": "", "capacity": 4, "passengers": []})
             diff -= min(diff, 4)
 
     for driver in drivers:
@@ -113,17 +104,9 @@ def main():
                     for _ in range(driver["capacity"]):
                         if len(crown) == 0: break
                         driver["passengers"].append(crown.pop())
-        # if len(driver["passengers"]) + 1 >= driver["capacity"]:
-        #     at_cap_drivers.append(driver)
-    
-    print(woodlawn)
-    print(crown)
-    print(fifty_third)
-    print(drivers)
-    # print(at_cap_drivers)
 
     for driver in drivers:
-        if "uber" in driver["name"]: continue
+        if "Uber" in driver["name"]: continue
         open_seats = driver["capacity"] - len(driver["passengers"]) - 1
         if open_seats == 0: continue
         if len(woodlawn) > 0:
@@ -168,7 +151,7 @@ def main():
                 driver["passengers"][i] = fname
             else:
                 driver["passengers"][i] = passenger[:passenger.index(" ") + 2]
-        if "uber" not in driver["name"]:
+        if "Uber" not in driver["name"]:
             for i, passenger in enumerate(driver["passengers1"]):
                 fname = passenger.split()[0]
                 try:
@@ -185,8 +168,9 @@ def main():
                     else:
                         driver["passengers2"][i] = passenger[:passenger.index(" ") + 2]
                 except: continue
-        print(driver["name"], "to", driver["pickup_location"] + ":", ", ".join(driver["passengers"]))
-        if "uber" not in driver["name"] and len(driver["passengers1"]) > 0:
+        if len(driver["passengers"]) > 0:
+            print(driver["name"], "to", driver["pickup_location"] + ":", ", ".join(driver["passengers"]))
+        if "Uber" not in driver["name"] and len(driver["passengers1"]) > 0:
             print(driver["name"], "to", driver["passengers1"].pop(0) + ": ", end = "")
             driver["passengers1"].sort()
             print(", ".join(driver["passengers1"]))
