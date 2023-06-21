@@ -2,16 +2,15 @@ import gspread
 import datetime
 import random
 
-def read_sheet():
-    acc = gspread.service_account(filename="service_account.json")
-    sheet = acc.open("crew_attendance")
-    wks = sheet.worksheet("attendance")
+def read_sheet(gspread_file, workbook, worksheet):
+    acc = gspread.service_account(filename = gspread_file)
+    sheet = acc.open(workbook)
+    wks = sheet.worksheet(worksheet)
     return wks.get_all_records()
 
-def main():
+def process_names(data):
     tmr = datetime.datetime.today() + datetime.timedelta(days=1)
     weekday = tmr.strftime('%a')
-    data = read_sheet()
 
     name_cnt = {}
     woodlawn = []
@@ -46,11 +45,15 @@ def main():
                     drivers.append({"name": name, "pickup_location": person["pickup_location"], "capacity": person["car_spots"], "passengers": [], "passengers1": [], "passengers2": []})
             case _:
                 pass
-    
+    return name_cnt, woodlawn, crown, fifty_third, drivers, total_cap
+
+def shuffle(woodlawn, crown, fifty_third):
     random.shuffle(woodlawn)
     random.shuffle(crown)
     random.shuffle(fifty_third)
+    return woodlawn, crown, fifty_third
 
+def determine_ubers(woodlawn, crown, fifty_third, drivers, total_cap):
     woodlawners = len(woodlawn)
     crowners = len(crown)
     fifty_thirders = len(fifty_third)
@@ -79,6 +82,7 @@ def main():
             drivers.insert(0, {"name": "Uber", "pickup_location": "", "capacity": 4, "passengers": []})
             diff -= min(diff, 4)
 
+def fill_cars(woodlawn, crown, fifty_third, drivers):
     for driver in drivers:
         match driver["pickup_location"]:
             case "Woodlawn":
@@ -105,6 +109,7 @@ def main():
                         if len(crown) == 0: break
                         driver["passengers"].append(crown.pop())
 
+def pickup_stragglers(woodlawn, crown, fifty_third, drivers): 
     for driver in drivers:
         if "Uber" in driver["name"]: continue
         open_seats = driver["capacity"] - len(driver["passengers"]) - 1
@@ -142,42 +147,60 @@ def main():
                     driver["passengers2"].append(fifty_third.pop())
                 open_seats -= (len(driver["passengers2"]) - 1)
 
+def sort_and_check_duplicates(driver, name_cnt):
+    driver["passengers"].sort()
+    for i, passenger in enumerate(driver["passengers"]):
+        fname = passenger.split()[0]
+        if name_cnt[fname] == 1:
+            driver["passengers"][i] = fname
+        else:
+            driver["passengers"][i] = passenger[:passenger.index(" ") + 2]
+    if "Uber" not in driver["name"]:
+        for i, passenger in enumerate(driver["passengers1"]):
+            fname = passenger.split()[0]
+            try:
+                if name_cnt[fname] == 1:
+                    driver["passengers1"][i] = fname
+                else:
+                    driver["passengers1"][i] = passenger[:passenger.index(" ") + 2]
+            except: continue
+        for i, passenger in enumerate(driver["passengers2"]):
+            fname = passenger.split()[0]
+            try:
+                if name_cnt[fname] == 1:
+                    driver["passengers2"][i] = fname
+                else:
+                    driver["passengers2"][i] = passenger[:passenger.index(" ") + 2]
+            except: continue
+
+def print_assignments(driver):
+    if len(driver["passengers"]) > 0:
+        print(driver["name"], "to", driver["pickup_location"] + ":", ", ".join(driver["passengers"]))
+    elif "Uber" not in driver["name"] and len(driver["passengers1"]) == 0:
+        print(driver["name"], "to", driver["name"] + ":", driver["name"])
+    if "Uber" not in driver["name"] and len(driver["passengers1"]) > 0:
+        print(driver["name"], "to", driver["passengers1"].pop(0) + ": ", end = "")
+        driver["passengers1"].sort()
+        print(", ".join(driver["passengers1"]))
+        if len(driver["passengers2"]) > 0:
+            print(driver["name"], "to", driver["passengers2"].pop(0) + ": ", end = "")
+            driver["passengers2"].sort()
+            print(", ".join(driver["passengers2"]))
+
+def finalise_assignments(drivers, name_cnt):
     for driver in drivers:
         driver["name"] = driver["name"].split()[0]
-        driver["passengers"].sort()
-        for i, passenger in enumerate(driver["passengers"]):
-            fname = passenger.split()[0]
-            if name_cnt[fname] == 1:
-                driver["passengers"][i] = fname
-            else:
-                driver["passengers"][i] = passenger[:passenger.index(" ") + 2]
-        if "Uber" not in driver["name"]:
-            for i, passenger in enumerate(driver["passengers1"]):
-                fname = passenger.split()[0]
-                try:
-                    if name_cnt[fname] == 1:
-                        driver["passengers1"][i] = fname
-                    else:
-                        driver["passengers1"][i] = passenger[:passenger.index(" ") + 2]
-                except: continue
-            for i, passenger in enumerate(driver["passengers2"]):
-                fname = passenger.split()[0]
-                try:
-                    if name_cnt[fname] == 1:
-                        driver["passengers2"][i] = fname
-                    else:
-                        driver["passengers2"][i] = passenger[:passenger.index(" ") + 2]
-                except: continue
-        if len(driver["passengers"]) > 0:
-            print(driver["name"], "to", driver["pickup_location"] + ":", ", ".join(driver["passengers"]))
-        if "Uber" not in driver["name"] and len(driver["passengers1"]) > 0:
-            print(driver["name"], "to", driver["passengers1"].pop(0) + ": ", end = "")
-            driver["passengers1"].sort()
-            print(", ".join(driver["passengers1"]))
-            if len(driver["passengers2"]) > 0:
-                print(driver["name"], "to", driver["passengers2"].pop(0) + ": ", end = "")
-                driver["passengers2"].sort()
-                print(", ".join(driver["passengers2"]))
+        sort_and_check_duplicates(driver, name_cnt)
+        print_assignments(driver)
+
+def main():
+    data = read_sheet("service_account.json", "crew_attendance", "attendance")
+    name_cnt, woodlawn, crown, fifty_third, drivers, total_cap = process_names(data)
+    woodlawn, crown, fifty_third = shuffle(woodlawn, crown, fifty_third)
+    determine_ubers(woodlawn, crown, fifty_third, drivers, total_cap)
+    fill_cars(woodlawn, crown, fifty_third, drivers)
+    pickup_stragglers(woodlawn, crown, fifty_third, drivers)
+    finalise_assignments(drivers, name_cnt)
 
 if __name__ == "__main__":
     # can maybe pass in an argument for the column header instead
