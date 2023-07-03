@@ -62,25 +62,26 @@ def determine_ubers(woodlawn, crown, fifty_third, drivers, total_cap):
     diff = 0
     if woodlawners + crowners + fifty_thirders + driverers > total_cap:
         diff = woodlawners + crowners + fifty_thirders + driverers - total_cap
-        if diff < 4 or diff % 4 == 0:
-            while diff > 0:
-                drivers.insert(0, {"name": "Uber", "pickup_location": "", "capacity": 4, "passengers": []})
-                diff -= min(diff, 4)
-        elif diff < 6 or diff % 6 == 0:
-            while diff > 0:
-                drivers.insert(0, {"name": "UberXL", "pickup_location": "", "capacity": 6, "passengers": []})
-                diff -= min(diff, 6)
-        elif diff <= 10:
+    if diff < 4:
+        while diff > 0:
+            drivers.insert(0, {"name": "Uber", "pickup_location": "", "capacity": 4, "passengers": []})
+            diff -= min(diff, 4)
+    elif diff < 6:
+        while diff > 0:
+            drivers.insert(0, {"name": "UberXL", "pickup_location": "", "capacity": 6, "passengers": []})
+            diff -= min(diff, 6)
+    # elif diff <= 10:
+    #     print("case 3")
+    #     drivers.insert(0, {"name": "UberXL", "pickup_location": "", "capacity": 6, "passengers": []})
+    #     diff -= 6
+    #     drivers.insert(0, {"name": "Uber", "pickup_location": "", "capacity": 4, "passengers": []})
+    #     diff -= min(diff, 4)
+    else:
+        while diff > 4:
             drivers.insert(0, {"name": "UberXL", "pickup_location": "", "capacity": 6, "passengers": []})
             diff -= 6
-            drivers.insert(0, {"name": "Uber", "pickup_location": "", "capacity": 4, "passengers": []})
-            diff -= min(diff, 4)
-        else:
-            while diff > 4:
-                drivers.insert(0, {"name": "UberXL", "pickup_location": "", "capacity": 6, "passengers": []})
-                diff -= 6
-            drivers.insert(0, {"name": "Uber", "pickup_location": "", "capacity": 4, "passengers": []})
-            diff -= min(diff, 4)
+        drivers.insert(0, {"name": "Uber", "pickup_location": "", "capacity": 4, "passengers": []})
+        diff -= min(diff, 4)
 
 def fill_cars(woodlawn, crown, fifty_third, drivers):
     for driver in drivers:
