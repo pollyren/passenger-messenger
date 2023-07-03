@@ -58,18 +58,18 @@ def determine_ubers(woodlawn, crown, fifty_third, drivers, total_cap):
     crowners = len(crown)
     fifty_thirders = len(fifty_third)
     driverers = len(drivers)
+    # print(woodlawners, crowners, fifty_thirders, driverers, total_cap)
 
     diff = 0
     if woodlawners + crowners + fifty_thirders + driverers > total_cap:
         diff = woodlawners + crowners + fifty_thirders + driverers - total_cap
+        # print(diff)
     if diff < 4:
-        while diff > 0:
-            drivers.insert(0, {"name": "Uber", "pickup_location": "", "capacity": 4, "passengers": []})
-            diff -= min(diff, 4)
+        drivers.insert(0, {"name": "Uber", "pickup_location": "", "capacity": 4, "passengers": []})
+        diff -= 4
     elif diff < 6:
-        while diff > 0:
-            drivers.insert(0, {"name": "UberXL", "pickup_location": "", "capacity": 6, "passengers": []})
-            diff -= min(diff, 6)
+        drivers.insert(0, {"name": "UberXL", "pickup_location": "", "capacity": 6, "passengers": []})
+        diff -= 6
     # elif diff <= 10:
     #     print("case 3")
     #     drivers.insert(0, {"name": "UberXL", "pickup_location": "", "capacity": 6, "passengers": []})
@@ -77,11 +77,12 @@ def determine_ubers(woodlawn, crown, fifty_third, drivers, total_cap):
     #     drivers.insert(0, {"name": "Uber", "pickup_location": "", "capacity": 4, "passengers": []})
     #     diff -= min(diff, 4)
     else:
-        while diff > 4:
+        while diff >= 9:
             drivers.insert(0, {"name": "UberXL", "pickup_location": "", "capacity": 6, "passengers": []})
             diff -= 6
-        drivers.insert(0, {"name": "Uber", "pickup_location": "", "capacity": 4, "passengers": []})
-        diff -= min(diff, 4)
+        while diff > 0:
+            drivers.insert(0, {"name": "Uber", "pickup_location": "", "capacity": 4, "passengers": []})
+            diff -= 4
 
 def fill_cars(woodlawn, crown, fifty_third, drivers):
     for driver in drivers:
@@ -109,6 +110,11 @@ def fill_cars(woodlawn, crown, fifty_third, drivers):
                     for _ in range(driver["capacity"]):
                         if len(crown) == 0: break
                         driver["passengers"].append(crown.pop())
+
+def check_empty(drivers):
+    for i, driver in enumerate(drivers):
+        if len(driver["passengers"]) == 0:
+            drivers.insert(0, drivers.pop(i)) # moves empty cars to pickup stragglers first
 
 def pickup_stragglers(woodlawn, crown, fifty_third, drivers): 
     for driver in drivers:
@@ -200,6 +206,7 @@ def main():
     woodlawn, crown, fifty_third = shuffle(woodlawn, crown, fifty_third)
     determine_ubers(woodlawn, crown, fifty_third, drivers, total_cap)
     fill_cars(woodlawn, crown, fifty_third, drivers)
+    check_empty(drivers)
     pickup_stragglers(woodlawn, crown, fifty_third, drivers)
     finalise_assignments(drivers, name_cnt)
 
