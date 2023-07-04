@@ -1,6 +1,6 @@
 # passenger-messenger
 
-Prerequisites: You must [create a service account](https://docs.gspread.org/en/latest/oauth2.html), save the service account json file as service_account.json in the same directory as assign_cars.py, and share the Google Sheet with the service account email.
+_Prerequisites_: You must [create a service account](https://docs.gspread.org/en/latest/oauth2.html), save the service account json file as service_account.json in the same directory as assign_cars.py, and share the Google Sheet with the service account email.
 
 The Google Sheet should be formatted as follows:
 |  pickup_location |    name       | Mon | Tue | Wed | Thu | Fri | Sat | Sun | car_spots |
@@ -11,6 +11,6 @@ The Google Sheet should be formatted as follows:
 |        ...       |      ...      | ... | ... | ... | ... | ... | ... | ... |    ...    |
 
 
-**Usage: python assign_cars.py [-d \<day of week>] [-s \<worksheet name>] [-b \<workbook name>]**
+**_Usage_: python assign_cars.py [-d \<day of week>] [-s \<worksheet name>] [-b \<workbook name>]**
 
 By default, day of week is the next day, worksheet name is "crew_attendance" and workbook name is "attendance". 
