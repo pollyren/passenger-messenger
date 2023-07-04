@@ -1,6 +1,7 @@
 import gspread
 import datetime
 import random
+import sys
 
 def read_sheet(gspread_file, workbook, worksheet):
     acc = gspread.service_account(filename = gspread_file)
@@ -9,8 +10,11 @@ def read_sheet(gspread_file, workbook, worksheet):
     return wks.get_all_records()
 
 def process_names(data):
-    tmr = datetime.datetime.today() + datetime.timedelta(days=1)
-    weekday = tmr.strftime('%a')
+    if "-d" in sys.argv:
+        weekday = sys.argv[sys.argv.index("-d") + 1]
+    else:
+        tmr = datetime.datetime.today() + datetime.timedelta(days=1)
+        weekday = tmr.strftime('%a')
 
     name_cnt = {}
     woodlawn = []
@@ -201,7 +205,9 @@ def finalise_assignments(drivers, name_cnt):
         print_assignments(driver)
 
 def main():
-    data = read_sheet("service_account.json", "crew_attendance", "attendance")
+    sheet = sys.argv[sys.argv.index("-s") + 1] if "-s" in sys.argv else "crew_attendance"
+    book = sys.argv[sys.argv.index("-b") + 1] if "-b" in sys.argv else "attendance"
+    data = read_sheet("service_account.json", sheet, book)
     name_cnt, woodlawn, crown, fifty_third, drivers, total_cap = process_names(data)
     woodlawn, crown, fifty_third = shuffle(woodlawn, crown, fifty_third)
     determine_ubers(woodlawn, crown, fifty_third, drivers, total_cap)
@@ -211,5 +217,4 @@ def main():
     finalise_assignments(drivers, name_cnt)
 
 if __name__ == "__main__":
-    # can maybe pass in an argument for the column header instead
     main()
